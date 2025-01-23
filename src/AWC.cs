@@ -51,10 +51,10 @@ namespace CalcsheetGenerator
                 //カラム名の追加
                 OutputDataTable.Columns.Add("武器名");
                 OutputDataTable.Columns.Add("精錬R");
-                OutputDataTable.Columns.Add("個人DPS");
-                OutputDataTable.Columns.Add("個人DPS_標準偏差");
                 OutputDataTable.Columns.Add("編成DPS");
                 OutputDataTable.Columns.Add("編成DPS_標準偏差");
+                OutputDataTable.Columns.Add("有効シールドHP");
+                OutputDataTable.Columns.Add("有効シールドHP_標準偏差");
 
                 IGcsim _Gcsim = _GcsimManager.CreateGcsimInstance();
 
@@ -168,65 +168,29 @@ namespace CalcsheetGenerator
 
         public static string[] GetWeaponDps(string GcsimOutput, string CharacterName)
         {
-            string regexNameMatch = "\"name\":\"[A-Za-z]+\"";
-            MatchCollection CharnameMatches = Regex.Matches(GcsimOutput, regexNameMatch);
-            string CharacterNameQuery = "\"name\":\"" + CharacterName + "\"";
 
-            int CharacterDPSPosition = 0;
-            int CharacterDPSstdevPosition = 0;
-            int NameMatchCounter = 0;
-            foreach (Match NameMatch in CharnameMatches)//キャラクター名の位置決め(configによって異なるため)
-            {
-               if (NameMatch.Value == CharacterNameQuery)
-                {
-                    switch (NameMatchCounter)
-                    {
-                        //Index奇数は武器名になっている
-                        case 0:
-                            CharacterDPSPosition = 2;
-                            CharacterDPSstdevPosition = 3;
-                            break;
-                        case 2:
-                            CharacterDPSPosition = 6;
-                            CharacterDPSstdevPosition = 7;
-                            break;
-                        case 4:
-                            CharacterDPSPosition = 10;
-                            CharacterDPSstdevPosition = 11;
-                            break;
-                        case 6:
-                            CharacterDPSPosition = 14;
-                            CharacterDPSstdevPosition = 15;
-                            break;
-                        default:
-                            throw new Exception(Message.Error.GcsimOutputNone);
-                    }
-                }
-               NameMatchCounter++;
-            }
-
-            //編成DPS数値の位置を検索:頭, 6を足しているのはクエリ自体を除外するため。
+            //SHP数値の位置を検索:頭, 6を足しているのはクエリ自体を除外するため。
+            int PosSHPSectionHead = GcsimOutput.IndexOf("shp") + 6;
+            //SHP数値の位置を検索:足, なぜか探してきてくれなくなったので1500文字持ってくる仕様に変更
+            int PosSHPSectionTail = PosSHPSectionHead + 1500;
+            //編成DPS数値の位置を検索:頭, 19を足しているのはクエリ自体を除外するため。
             int PosTeamDPSSectionHead = GcsimOutput.IndexOf("dps") + 6;
             //編成DPS数値の位置を検索:足, なぜか探してきてくれなくなったので1500文字持ってくる仕様に変更
             int PosTeamDPSSectionTail = PosTeamDPSSectionHead + 1500;
-            //キャラクターDPS数値の位置を検索:頭, 19を足しているのはクエリ自体を除外するため。
-            int PosCharDPSSectionHead = GcsimOutput.IndexOf("character_dps") + 17;
-            //キャラクターDPS数値の位置を検索:足, なぜか探してきてくれなくなったので1500文字持ってくる仕様に変更
-            int PosCharDPSSectionTail = PosCharDPSSectionHead + 1500;
             //{}で区切られたキャラごとのDPS値が取得できる
 
             //DPS数値部分のみをカンマ区切りで切り出して配列にぶち込む
+            string[] SHParray = GcsimOutput.Substring(PosSHPSectionHead).Remove(PosSHPSectionTail).Split(',');
             string[] TeamDPSarray = GcsimOutput.Substring(PosTeamDPSSectionHead).Remove(PosTeamDPSSectionTail).Split(',');
-            string[] CharDPSarray = GcsimOutput.Substring(PosCharDPSSectionHead).Remove(PosCharDPSSectionTail).Split(',');
 
             string regexNumberMatch = "[0-9]+\\.[0-9]+";
             //配列の中の位置から必要な数値を持ってきてregexで数字だけ切り出す
-            string CharacterDPS = Regex.Match(CharDPSarray[CharacterDPSPosition], regexNumberMatch).Value;
-            string CharacterDPSstdev = Regex.Match(CharDPSarray[CharacterDPSstdevPosition], regexNumberMatch).Value;
             string TeamDPS = Regex.Match(TeamDPSarray[2], regexNumberMatch).Value;
             string TeamDPSstdev = Regex.Match(TeamDPSarray[3], regexNumberMatch).Value;
+            string SHP = Regex.Match(SHParray[2], regexNumberMatch).Value;
+            string SHPstdev = Regex.Match(SHParray[3], regexNumberMatch).Value;
 
-            string[] WeaponDPSParams = { CharacterDPS, CharacterDPSstdev, TeamDPS, TeamDPSstdev };
+            string[] WeaponDPSParams = { TeamDPS, TeamDPSstdev, SHP, SHPstdev };
 
             return WeaponDPSParams;
         }
