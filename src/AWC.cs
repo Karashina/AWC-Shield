@@ -136,7 +136,7 @@ namespace CalcsheetGenerator
                                 Console.WriteLine(ge.Message);
                             }
 
-                            Console.WriteLine(Weapon.NameInternal + CritSuffix + "Char DPS:" + WeaponDpsParams[0]); //Consoleに進捗出力
+                            Console.WriteLine(Weapon.NameInternal + CritSuffix + "Team DPS: " + WeaponDpsParams[0] + "SHP: " + WeaponDpsParams[2]); //Consoleに進捗出力
 
                             OutputDataTable.Rows.Add(Weapon.NameJapanese + CritSuffix, WeaponRefineRank, WeaponDpsParams[0], WeaponDpsParams[1], WeaponDpsParams[2], WeaponDpsParams[3]); //tableに結果を格納
                         }
