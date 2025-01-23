@@ -1,0 +1,22 @@
+#output file
+.DS_Store
+/out
+
+#input file
+resource/execBinary
+resource/input/*.csv
+resource/input/*.txt
+
+# Visual Studio output
+.vs
+*.suo
+*.user
+_ReSharper.*
+bin
+obj
+packages
+src/Properties/PublishProfiles/FolderProfile.pubxml
+resource/execBinary/gcsim.exe
+resource/input/config.txt
+resource/input/temp.txt
+resource/input/artifacts.csv
